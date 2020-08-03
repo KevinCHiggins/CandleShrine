@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">CandleShrine</string>
+    <string name="app_fullname">com.example.candleshrine</string>
+    <string name="preferences_filename">com.example.candleshrine.preferences</string>
+    <string name="preferences_key_shrine_built">shrine</string>
+    <string name="preferences_key_style_index">style</string>
+    <string name="preferences_key_image_index">image</string>
+    <string name="preferences_key_scale">scale</string>
+    <string name="database_key_bitmap">bitmap</string>
+    <string name="database_key_style_bitmap">style_bitmap</string>
+    <string name="database_key_style_bitmap_final">style_bitmap_final</string>
+    <string name="database_key_intentions">intentions</string>
+    <string name="database_key_dedications">dedications</string>
+    <string name="bitmaps_base_filename">style_bg_</string>
+    <string name="style_resized_cropped_filename">style_resized_cropped</string>
+    <string name="temp_style_resized_cropped_filename">temp_style</string>
+    <string name="sacred_image_filename">sacred_image</string>
+</resources>

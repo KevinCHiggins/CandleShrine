@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".EditTextsActivity"
+    android:layout_margin="20dp"
+    >
+
+
+    <Button
+        android:id="@+id/selectButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Select from saved texts"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_margin="20dp"/>
+    <TextView
+        android:id="@+id/dedicationLabel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Dedication"
+        app:layout_constraintTop_toBottomOf="@id/selectButton"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_margin="20dp" />
+    <EditText
+        android:id="@+id/dedicationField"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:singleLine="true"
+        app:layout_constraintTop_toBottomOf="@id/dedicationLabel"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_margin="20dp" />
+    <TextView
+        android:id="@+id/intentionLabel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Intention"
+        app:layout_constraintTop_toBottomOf="@id/dedicationField"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_margin="20dp" />
+    <EditText
+        android:id="@+id/intentionField"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:singleLine="true"
+        app:layout_constraintTop_toBottomOf="@id/intentionLabel"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_margin="20dp" />
+    <TextView
+        android:id="@+id/saveLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Save"
+        app:layout_constraintTop_toBottomOf="@id/intentionField"
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:layout_margin="20dp" />
+    <CheckBox
+        android:id="@+id/saveCheckbox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/intentionField"
+        app:layout_constraintRight_toRightOf="parent"
+        android:foregroundGravity="right"
+        android:layout_margin="20dp" />
+    <Button
+        android:id="@+id/finishedButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Done"
+        app:layout_constraintTop_toBottomOf="@id/saveLabel"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_margin="20dp" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

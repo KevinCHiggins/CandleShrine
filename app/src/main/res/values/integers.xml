@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer name="request_crop_image_code">0</integer>
+    <integer name="request_load_image_code">1</integer>
+    <integer name="request_select_image_code">2</integer>
+    <integer name="request_select_style_code">3</integer>
+    <integer name="request_strike_match_code">4</integer>
+    <integer name="request_select_texts_code">5</integer>
+</resources>
