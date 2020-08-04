@@ -6,13 +6,22 @@
     <string name="preferences_key_style_index">style</string>
     <string name="preferences_key_image_index">image</string>
     <string name="preferences_key_scale">scale</string>
+    <string name="preferences_key_resized_unlit_styles_saved">unlit_styles_resized</string>
+    <string name="preferences_key_resized_lit_styles_saved">lit_styles_resized</string>
+    <string name="preferences_key_current_image_filename">current_filename</string>
+    <string name="intent_key_style_index">style_index</string>
     <string name="database_key_bitmap">bitmap</string>
     <string name="database_key_style_bitmap">style_bitmap</string>
     <string name="database_key_style_bitmap_final">style_bitmap_final</string>
     <string name="database_key_intentions">intentions</string>
     <string name="database_key_dedications">dedications</string>
     <string name="bitmaps_base_filename">style_bg_</string>
-    <string name="style_resized_cropped_filename">style_resized_cropped</string>
-    <string name="temp_style_resized_cropped_filename">temp_style</string>
+    <string name="bitmaps_lit_base_filename">style_lit_</string>
+    <string name="custom_image_filename_a">custom_image_a.png</string>
+    <string name="custom_image_filename_b">custom_image_b.png</string>
+    <string name="style_resized_cropped_filename">style_resized_cropped_</string>
+    <string name="style_lit_resized_cropped_filename">style_lit_resized_cropped_</string>
+    <string name="temp_style_resized_cropped_filename">temp_style_</string>
+    <string name="temp_style_lit_resized_cropped_filename">temp_style_lit_</string>
     <string name="sacred_image_filename">sacred_image</string>
 </resources>

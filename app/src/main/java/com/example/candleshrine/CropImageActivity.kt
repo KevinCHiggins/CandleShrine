@@ -3,6 +3,7 @@ package com.example.candleshrine
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.ComponentName
+import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
@@ -32,14 +33,25 @@ class CropImageActivity : AppCompatActivity() {
         setContentView(R.layout.activity_crop_image)
         finishedCropButton.setOnClickListener {
             val cropped = crop.croppedBitmap
-            Log.d(TAG, "Parceling cropped image width: " + cropped.width + ", orig width: " + crop.width)
-            val image = Intent()
-            image.putExtra("image", crop.croppedBitmap)
+            // find out what filename is currently *not* referenced by the shrine
+            val prefs = getSharedPreferences(getString(R.string.preferences_filename), Context.MODE_PRIVATE)
+            val filenameInUse = prefs.getString(getString(R.string.preferences_key_current_image_filename), "")
+            val newName: String
+            if (filenameInUse.equals(getString(R.string.custom_image_filename_a))){
+                newName = getString(R.string.custom_image_filename_b)
+            }
+            else { // even if it was blank, just use a
+                newName = getString(R.string.custom_image_filename_a)
+            }
+            Log.d(TAG, "Saving cropped image width: " + cropped.width + ", orig width: " + crop.width)
+            val bitmapManager = BitmapManager()
+            bitmapManager.save(this, cropped, newName)
             Log.d(TAG, "Setting successful result and finishing")
-            setResult(Activity.RESULT_OK, image)
+            val passFilename = Intent()
+            passFilename.putExtra("filename", newName)
+            setResult(Activity.RESULT_OK, passFilename)
             finish()
         }
-
 
         crop.params.shape = CookieCutterShape.HOLE
         val loadCustomImage = Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI)

@@ -51,7 +51,7 @@ class EditTextsActivity : AppCompatActivity() {
             if (resultCode == Activity.RESULT_OK) {
                 // doesn't take String
                 dedicationField.setText(data!!.getBundleExtra("texts").get("dedication") as CharSequence)
-                intentionField.setText(data!!.getBundleExtra("texts").get("intention") as CharSequence)
+                intentionField.setText(data.getBundleExtra("texts").get("intention") as CharSequence)
                 Log.d(TAG,"Texts updated from text selection activity.")
             }
             else if (resultCode == Activity.RESULT_CANCELED) {
