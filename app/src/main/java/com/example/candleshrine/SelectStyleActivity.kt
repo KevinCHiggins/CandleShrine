@@ -7,8 +7,10 @@ import android.content.Intent
 import android.graphics.Bitmap
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.PersistableBundle
 import android.util.Log
 import android.view.ViewTreeObserver
+import io.paperdb.Paper
 import kotlinx.android.synthetic.main.activity_select_style.*
 import kotlin.concurrent.thread
 
@@ -33,30 +35,35 @@ class SelectStyleActivity : AppCompatActivity() {
     var waitingOnSaveToDisk = false
     val isStyleLoaded = Array<Boolean>(numStyles) { false }
     val styles = arrayOfNulls<Bitmap>(numStyles)
-    val styleIds = intArrayOf(R.drawable.test1, R.drawable.test2, R.drawable.test3)
-    var styleDisplayWidth = 0
-    var styleDisplayHeight = 0
+
+    //val styleIds = intArrayOf(R.drawable.test1, R.drawable.test2, R.drawable.test3)
+
     var currId = 0
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_select_style)
-        val prefs = getSharedPreferences(getString(R.string.preferences_filename), Context.MODE_PRIVATE)
+        // Restore flags and style index from saved state or database if possible
+        if (savedInstanceState != null &&
+            savedInstanceState.containsKey("currId") &&
+            savedInstanceState.containsKey("stylesSavedToDisk")) {
+            currId = savedInstanceState.getInt("currId")
+            stylesSavedToDisk = savedInstanceState.getBoolean("stylesSavedToDisk")
+            Log.d(TAG, "Restored from saved instance state - index: " + currId + ", saved flag: " + stylesSavedToDisk)
+        }
+        else {
+            currId = Paper.book().read(getString(R.string.preferences_key_style_index), 0) // will be 0 on first run or if none saved
+            stylesSavedToDisk = Paper.book().read(getString(R.string.preferences_key_resized_unlit_styles_saved), false)
+            Log.d(TAG, "Restored from database (or using defaults) - index: " + currId + ", saved flag: " + stylesSavedToDisk)
+        }
 
-        Log.d(TAG, "Style index found in preferences? " + prefs.contains(getString(R.string.preferences_key_style_index)))
-        currId = prefs.getInt(getString(R.string.preferences_key_style_index), 0)
-        displayStyle(currId)
-        Log.d(TAG, "Setting style number " + currId)
+
         styleDisplaySelectStyle.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
             override fun onGlobalLayout() {
-                Log.d(TAG, "Start")
                 styleDisplaySelectStyle.viewTreeObserver.removeOnGlobalLayoutListener(this)
-                //val prefs = getSharedPreferences(getString(R.string.preferences_filename), Context.MODE_PRIVATE)
-                stylesSavedToDisk = prefs.getBoolean(getString(R.string.preferences_key_resized_unlit_styles_saved), false)
-                styleDisplayWidth = styleDisplaySelectStyle.width
-                styleDisplayHeight = styleDisplaySelectStyle.height // I tried reducing it by statusBarHeight, didn't work
+                val styleDisplayWidth = styleDisplaySelectStyle.width
+                val styleDisplayHeight = styleDisplaySelectStyle.height // I tried reducing it by statusBarHeight, didn't work
                 Log.d(TAG, "Style width: " + styleDisplayWidth + ", style height: " + styleDisplayHeight)
-                // now that styleDisplayWidth/Height properties are set, we can load bitmaps
-                // using it to resize
+                // now that styleDisplayWidth/Height properties are set, loadAndResizeBitmap will work...
                 thread {
                     for (i in 0..2) {
                         if (stylesSavedToDisk) {
@@ -65,7 +72,7 @@ class SelectStyleActivity : AppCompatActivity() {
 
                         }
                         else {
-                            loadAndResizeBitmap(i)
+                            loadAndResizeBitmap(i, styleDisplayWidth, styleDisplayHeight)
                             Log.d(TAG, "Loaded and resized asset, now of width: " + styles[i]!!.width + ", height: " + styles[i]!!.height + " for style " + i)
 
                         }
@@ -85,8 +92,9 @@ class SelectStyleActivity : AppCompatActivity() {
                             saveBitmap(i)
                         }
 
-                        val editPrefs = prefs.edit()
-                        editPrefs.putBoolean(getString(R.string.preferences_key_resized_unlit_styles_saved), true)
+
+                        Paper.book().write(getString(R.string.preferences_key_resized_unlit_styles_saved), true)
+                        Log.d(TAG, "Saved flag for unlit resized styles on disk to database")
                         runOnUiThread {
                             stylesSavedToDisk = true
                             if (waitingOnSaveToDisk) {
@@ -104,19 +112,16 @@ class SelectStyleActivity : AppCompatActivity() {
         })
 
         finishedStyleButton.setOnClickListener {
-            val editPrefs = prefs.edit()
-            editPrefs.putInt(getString(R.string.preferences_key_style_index), currId)
-            // saving resized lit style images is now going to happen at the end of selectImage
+            // for the moment I have decided NOT to save it here, instead it will
+            // be passed in the intent to the select image activity and only persisted
+            // if the user clicks "Build Shrine!" there
             /*
-            Log.d(TAG, "Saving resized/cropped style bitmap width: " + styles[currId]!!.width + " to file")
-            val bitmapUtil = BitmapManager()
-            val lit = bitmapUtil.getCentreFitted(this, getString(R.string.bitmaps_lit_base_filename) + currId.toString() + ".png", styleDisplayWidth, styleDisplayHeight)
-            bitmapUtil.save(this, lit, getString(R.string.temp_style_lit_resized_cropped_filename))
-            bitmapUtil.save(this, styles[currId]!!, getString(R.string.temp_style_resized_cropped_filename))
-            */
-            Log.d(TAG, "Saving style index to preferences")
-            // hopefully async save will be fast enough - any hint of an issue and I will change to synchronous
-            editPrefs.apply()
+            Paper.book().write(getString(R.string.preferences_key_style_index), currId)
+
+            Log.d(TAG, "Saved style index to database")
+
+
+             */
             if (stylesSavedToDisk) {
                 launchSelectImage()
             }
@@ -149,10 +154,10 @@ class SelectStyleActivity : AppCompatActivity() {
             styleLoadingText.text = "Please wait. Loading style " + (index + 1).toString() + "..."
         }
     }
-    fun loadAndResizeBitmap(index: Int) {
+    fun loadAndResizeBitmap(index: Int, dstWidth: Int, dstHeight: Int) {
         val assetName = getString(R.string.bitmaps_base_filename) + index.toString() + ".png"
         Log.d(TAG, "Attempting to load bitmap from asset: " + assetName)
-        styles[index] = bitmapManager.getCentreFitted(this, assetName, styleDisplayWidth, styleDisplayHeight)
+        styles[index] = bitmapManager.getCentreFitted(this, assetName, dstWidth, dstHeight)
     }
     fun loadBitmap(index: Int) {
         val bitmapManager = BitmapManager()
@@ -180,9 +185,16 @@ class SelectStyleActivity : AppCompatActivity() {
         }
         super.onActivityResult(requestCode, resultCode, data)
     }
+
+    override fun onSaveInstanceState(outState: Bundle, outPersistentState: PersistableBundle) {
+        super.onSaveInstanceState(outState, outPersistentState)
+        outState.putInt("currId", currId)
+        outState.putBoolean("stylesSavedToDisk", stylesSavedToDisk)
+        Log.d(TAG, "Saved index: " + currId + ", styles saved flag: " + stylesSavedToDisk + " in saved state")
+    }
     fun nextStyle() {
         currId++
-        if (currId >= styleIds.size) {
+        if (currId >= numStyles) {
             currId = 0
         }
         Log.d(TAG, "Setting style number " + currId)
@@ -191,7 +203,7 @@ class SelectStyleActivity : AppCompatActivity() {
     fun prevStyle() {
         currId--
         if (currId < 0) {
-            currId = styleIds.size - 1
+            currId = numStyles - 1
         }
         Log.d(TAG, "Setting style number " + currId)
         displayStyle(currId)

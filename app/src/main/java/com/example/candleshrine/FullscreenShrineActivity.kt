@@ -11,6 +11,7 @@ import android.graphics.PorterDuffXfermode
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import io.paperdb.Paper
 import kotlinx.android.synthetic.main.activity_fullscreen_shrine.*
 import kotlin.concurrent.thread
 
@@ -37,12 +38,13 @@ class FullscreenShrineActivity : AppCompatActivity(), TimeAnimator.TimeListener 
         setContentView(R.layout.activity_fullscreen_shrine)
         timer.setTimeListener(this)
         timer.start()
-        Log.d(TAG, "Style display object: " + styleDisplayFullscreenShrine.toString())
-        val prefs = getSharedPreferences(getString(R.string.preferences_filename), Context.MODE_PRIVATE)
-        val currentFilename = prefs.getString(getString(R.string.preferences_key_current_image_filename), "")
-        Log.d(TAG, "Filename from prefs is " + currentFilename)
-        val imageIndex = prefs.getInt(getString(R.string.preferences_key_image_index), 0)
-        val styleIndex = prefs.getInt(getString(R.string.preferences_key_style_index), -1)
+
+        val currentFilename = Paper.book().read(getString(R.string.preferences_key_current_image_filename), "")
+        Log.d(TAG, "Filename from database is " + currentFilename)
+        val imageIndex = Paper.book().read(getString(R.string.preferences_key_image_index), 0)
+
+        // no point displaying a different shrine, I'd rather crash
+        val styleIndex = Paper.book().read(getString(R.string.preferences_key_style_index), -1)
         //val styleIndex = prefs.getInt(getString(R.string.preferences_key_style_index), 0)
         if (imageIndex < imageIds.size - 1) {
             imageDisplayFullscreenShrine.setImageResource(imageIds[imageIndex])
@@ -85,20 +87,17 @@ class FullscreenShrineActivity : AppCompatActivity(), TimeAnimator.TimeListener 
         }
 
     }
+    override fun onPause() {
+        super.onPause()
+        timer.pause()
+    }
+    override fun onResume() {
+        super.onResume()
+        timer.resume()
+    }
     override fun onTimeUpdate(animation: TimeAnimator?, totalTime: Long, deltaTime: Long) {
         val result = 0 + (noiseOctave1.sampleAt(totalTime)*64) + noiseOctave2.sampleAt(totalTime)*64
         + noiseOctave3.sampleAt(totalTime)*128
-
         styleLitDisplayFullscreenShrine.imageAlpha = result.toInt()
-        /*
-        perturb+= (Random.nextInt(0,101) - 50)
-        phase = phase + ((deltaTime.toFloat() + perturb) / 20000)
-        result = (sin.getInterpolation(phase) + 1) / 2
-        debug.text = phase.toString() + "\nResult" + result + "\nTotal: " + totalTime +
-                "\ndelta: " + deltaTime + "\nPerturb: " + perturb + "\nAlpha: " + alpha
-        alpha = (result * 255).toInt()
-        lit.imageAlpha = alpha
-
-         */
     }
 }
