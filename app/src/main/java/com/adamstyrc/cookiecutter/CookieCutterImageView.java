@@ -1,3 +1,26 @@
+/*
+ * Copyright (C) 2020 Kevin Higgins
+ * @author Kevin Higgins
+ * I have added some debug logging for learning purposes, and changed code in two
+ * places, both demarcated with comments, in order to make this class work with
+ * a rectangular Path instead of a Circle as the cropping shape. Otherwise this is
+ * all Adam Styrc's design. Original available at https://github.com/adamstyrc/cookie-cutter
+ * - Kevin Higgins 05/08/20
+ *
+ * Copyright (C) 2016 Adam Styrc
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.adamstyrc.cookiecutter;
 
 import android.annotation.TargetApi;
@@ -8,6 +31,7 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
@@ -15,6 +39,8 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
+
+import androidx.appcompat.widget.AppCompatImageView;
 
 /**
  * Created by adamstyrc on 31/03/16.
@@ -58,7 +84,7 @@ public class CookieCutterImageView extends ImageView {
             vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                 @Override
                 public void onGlobalLayout() {
-                    getViewTreeObserver().removeGlobalOnLayoutListener(this);
+                    getViewTreeObserver().removeOnGlobalLayoutListener(this);
                     onImageLoaded();
                 }
             });
@@ -77,9 +103,11 @@ public class CookieCutterImageView extends ImageView {
 
         if (bitmap != null && cookieCutterParams.getCircle() != null) {
             RectF drawableRect = new RectF(0, 0, bitmap.getWidth(), bitmap.getHeight());
-
+            Log.d("CookieCutterImageView", "Kevin debug - width prop: " + getWidth() + ", height: " + getHeight());
             Circle circle = cookieCutterParams.getCircle();
+            Log.d("CookieCutterImageView", "Kevin debug - circleDiam: " + circle.getDiameter());
             RectF viewRect;
+
             if (bitmap.getWidth() > bitmap.getHeight()) {
                 float scale = (float) circle.getDiameter() / bitmap.getHeight();
                 float scaledWidth = scale * bitmap.getWidth();
@@ -128,24 +156,12 @@ public class CookieCutterImageView extends ImageView {
 
     @Override
     public void setImageURI(Uri uri) {
-        /**
-         * @Kevin Higgins 29/07/20 adding try-catch
-         */
-        /*
-        try {
 
-         */
             super.setImageURI(uri);
             BitmapDrawable bitmapDrawable = (BitmapDrawable) getDrawable();
             Bitmap bitmap = bitmapDrawable.getBitmap();
             setImageBitmap(bitmap);
-            /*
-        }
-        catch (NullPointerException npe) {
-            Log.d("CookieCutterImageView", "Image URI not resolved.");
-            return;
-        }
-*/
+
 
     }
 
@@ -162,18 +178,28 @@ public class CookieCutterImageView extends ImageView {
         MatrixParams matrixParams = MatrixParams.fromMatrix(matrix);
         Bitmap bitmap = getBitmap();
         Circle circle = cookieCutterParams.getCircle();
+        /**
+         * @Kevin Higgins begin changed code
+         */
+        // recover path bounds
+        RectF pathBounds = new RectF();
+        cookieCutterParams.getHoleParams().path.computeBounds(pathBounds, true);
+        Log.d("CookieCutterImageView", "Kevin debug Path bounds:" + pathBounds.toString());
+        int sizeX = (int) ((pathBounds.right - pathBounds.left) / matrixParams.getScaleWidth());
+        int sizeY = (int) ((pathBounds.bottom - pathBounds.top) / matrixParams.getScaleHeight());
+        int y = getCropRectTop(matrixParams, pathBounds);
+        int x = getCropRectLeft(matrixParams, pathBounds);
 
-        int size = (int) (circle.getDiameter() / matrixParams.getScaleWidth());
-        int y = getCropTop(matrixParams, circle);
-        int x = getCropLeft(matrixParams, circle);
-
-        Logger.log("x: " + x + " y: " + y + " size: " + size);
+        Log.d("CookieCutterImageView", "Kevin debug x: " + x + " y: " + y + " sizeX: " + sizeX + ", sizeY: " + sizeY);
         Bitmap croppedBitmap = Bitmap.createBitmap(bitmap,
                 x,
                 y,
-                size,
-                size);
+                sizeX,
+                sizeY);
 
+        /*
+        @Kevin Higgins end changed code
+         */
         return croppedBitmap;
     }
 
@@ -201,9 +227,36 @@ public class CookieCutterImageView extends ImageView {
         return (int) y;
     }
 
+    /**
+     * @Kevin Higgins making my own versions of getCropTop and getCropleft for my case of a centred
+     * 600x800 rect, rather than the circle. This is a late fix - I didn't realise that
+     * this class is focused on the circle case and doesn't seem to have functionality
+     * for figuring out the bounds of other shapes. Hence the following two methods to replace
+     * the ones using the circle.
+     * Begin changed code:
+     */
+    private int getCropRectLeft(MatrixParams matrixParams, RectF pathBounds) {
+        float translationX = matrixParams.getX();
+        float x = pathBounds.left - translationX;
+        x = Math.max(x, 0);
+        x /= matrixParams.getScaleWidth();
+        return (int) x;
+    }
+
+    private int getCropRectTop(MatrixParams matrixParams, RectF pathBounds) {
+        float translationY = matrixParams.getY();
+        float y = pathBounds.top - translationY;
+        y = Math.max(y, 0);
+        y /= matrixParams.getScaleWidth();
+        return (int) y;
+    }
+    /*
+    End changed
+     */
     private void setDefaultRadius() {
         Point screenSize = ImageUtils.getScreenSize(getContext());
         int minScreenSize = Math.min(screenSize.x, screenSize.y);
         cookieCutterParams.setCircleRadius((int) (minScreenSize * 0.4f));
+        Log.d("CookieCutterImageView", "Kevin debug - radius is now: " + cookieCutterParams.getCircleRadius());
     }
 }

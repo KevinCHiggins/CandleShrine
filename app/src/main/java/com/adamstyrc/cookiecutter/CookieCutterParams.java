@@ -1,3 +1,24 @@
+/*
+ * Copyright (C) 2020 Kevin Higgins
+ * @author Kevin Higgins
+ * I changed the Path option to be a 600x800 rectangle, commenting my changes. Otherwise this is
+ * all Adam Styrc's design. Original available at https://github.com/adamstyrc/cookie-cutter
+ * - Kevin Higgins 05/08/20
+ *
+ * Copyright (C) 2016 Adam Styrc
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.adamstyrc.cookiecutter;
 
 import android.graphics.Color;
@@ -111,7 +132,7 @@ public class CookieCutterParams {
             */
 
 
-            path.addRect(new RectF((width - 600) / 2, (height - 800) / 2, 600 + ((width - 600) / 2), 800 + ((height - 800) / 2)), Path.Direction.CW);
+            path.addRect(new RectF((width - 504) / 2, (height - 707) / 2, 504 + ((width - 504) / 2), 707 + ((height - 707) / 2)), Path.Direction.CW);
         }
     }
 

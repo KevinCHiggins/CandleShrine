@@ -6,4 +6,23 @@
     <integer name="request_select_style_code">3</integer>
     <integer name="request_strike_match_code">4</integer>
     <integer name="request_select_texts_code">5</integer>
+    <integer name="candle_duration_minutes">30</integer>
+    <integer name="standard_sacred_image_width">504</integer>
+    <integer name="standard_sacred_image_height">707</integer>
+    <!-- obvs an XML structure for these would be nicer-->
+    <integer name="coord_left_0">708</integer>
+    <integer name="coord_top_0">1457</integer>
+    <integer name="coord_right_0">1212</integer>
+    <integer name="coord_bottom_0">2164</integer>
+    <integer name="coord_left_1">708</integer>
+    <integer name="coord_top_1">1267</integer>
+    <integer name="coord_right_1">1212</integer>
+    <integer name="coord_bottom_1">1974</integer>
+    <integer name="coord_left_2">708</integer>
+    <integer name="coord_top_2">1242</integer>
+    <integer name="coord_right_2">1212</integer>
+    <integer name="coord_bottom_2">1949</integer>
+
+
+
 </resources>

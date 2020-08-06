@@ -1,3 +1,21 @@
+/*
+* Copyright (C) 2020 Kevin Higgins
+* @author Kevin Higgins
+* This class lets the user choose the appearance of their shrine.
+*  - Kevin Higgins 05/08/20
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 package com.example.candleshrine
 
 import android.app.Activity
@@ -5,6 +23,8 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.Point
+import android.graphics.RectF
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.PersistableBundle
@@ -25,7 +45,24 @@ class SelectStyleActivity : AppCompatActivity() {
     val TAG = "SelectStyleActivity"
     val numStyles = 3
     val bitmapManager = BitmapManager()
+    var styleDisplayWidth = 0
+    var styleDisplayHeight = 0
 
+    // will load this from a text file ASAP
+    val origCanvasPos = arrayOf<Float>(
+        708f,
+        1457f,
+        1212f,
+        2164f,
+        708f,
+        1267f,
+        1212f,
+        1974f,
+        708f,
+        1242f,
+        1212f,
+        1949f
+    )
     // checked against Shared Preferences on load, updated if needed after background loading and saving,
     // and used to decide whether "Done" button creates a "Wait a moment" alert or goes to next activity immediately
     var stylesSavedToDisk = false
@@ -45,23 +82,30 @@ class SelectStyleActivity : AppCompatActivity() {
         // Restore flags and style index from saved state or database if possible
         if (savedInstanceState != null &&
             savedInstanceState.containsKey("currId") &&
-            savedInstanceState.containsKey("stylesSavedToDisk")) {
+            savedInstanceState.containsKey("stylesSavedToDisk") &&
+                savedInstanceState.containsKey("styleDisplayWidth") &&
+                savedInstanceState.containsKey(("styleDisplayHeight"))) {
             currId = savedInstanceState.getInt("currId")
             stylesSavedToDisk = savedInstanceState.getBoolean("stylesSavedToDisk")
+            styleDisplayWidth = savedInstanceState.getInt("styleDisplayWidth")
+            styleDisplayHeight = savedInstanceState.getInt("styleDisplayHeight")
             Log.d(TAG, "Restored from saved instance state - index: " + currId + ", saved flag: " + stylesSavedToDisk)
         }
         else {
-            currId = Paper.book().read(getString(R.string.preferences_key_style_index), 0) // will be 0 on first run or if none saved
-            stylesSavedToDisk = Paper.book().read(getString(R.string.preferences_key_resized_unlit_styles_saved), false)
+            currId = Paper.book().read(getString(R.string.database_key_style_index), 0) // will be 0 on first run or if none saved
+            stylesSavedToDisk = Paper.book().read(getString(R.string.database_key_resized_unlit_styles_saved), false)
             Log.d(TAG, "Restored from database (or using defaults) - index: " + currId + ", saved flag: " + stylesSavedToDisk)
         }
+
+
 
 
         styleDisplaySelectStyle.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
             override fun onGlobalLayout() {
                 styleDisplaySelectStyle.viewTreeObserver.removeOnGlobalLayoutListener(this)
-                val styleDisplayWidth = styleDisplaySelectStyle.width
-                val styleDisplayHeight = styleDisplaySelectStyle.height // I tried reducing it by statusBarHeight, didn't work
+                styleDisplayWidth = styleDisplaySelectStyle.width
+                styleDisplayHeight = styleDisplaySelectStyle.height // I tried reducing it by statusBarHeight, didn't work
+
                 Log.d(TAG, "Style width: " + styleDisplayWidth + ", style height: " + styleDisplayHeight)
                 // now that styleDisplayWidth/Height properties are set, loadAndResizeBitmap will work...
                 thread {
@@ -93,7 +137,7 @@ class SelectStyleActivity : AppCompatActivity() {
                         }
 
 
-                        Paper.book().write(getString(R.string.preferences_key_resized_unlit_styles_saved), true)
+                        Paper.book().write(getString(R.string.database_key_resized_unlit_styles_saved), true)
                         Log.d(TAG, "Saved flag for unlit resized styles on disk to database")
                         runOnUiThread {
                             stylesSavedToDisk = true
@@ -122,6 +166,15 @@ class SelectStyleActivity : AppCompatActivity() {
 
 
              */
+
+            Log.d(TAG, "Saving absolute image position for current screen size")
+            val transformer = RectFTransformer()
+            Paper.book().write<RectF>(getString(R.string.database_key_actual_image_rectf), transformer.transform(getOrigCanvasPos(), styleDisplayWidth, styleDisplayHeight))
+
+            Paper.book().write(getString(R.string.database_key_resized_width), styleDisplayWidth)
+            Paper.book().write(getString(R.string.database_key_resized_height), styleDisplayHeight)
+            Log.d(TAG, "Saving complete: " + Paper.book().contains((getString(R.string.database_key_actual_image_rectf))) + ", with " + Paper.book().read(getString(R.string.database_key_actual_image_rectf)))
+
             if (stylesSavedToDisk) {
                 launchSelectImage()
             }
@@ -190,7 +243,10 @@ class SelectStyleActivity : AppCompatActivity() {
         super.onSaveInstanceState(outState, outPersistentState)
         outState.putInt("currId", currId)
         outState.putBoolean("stylesSavedToDisk", stylesSavedToDisk)
-        Log.d(TAG, "Saved index: " + currId + ", styles saved flag: " + stylesSavedToDisk + " in saved state")
+        outState.putInt("styleDisplayWidth", styleDisplayWidth)
+        outState.putInt("styleDisplayHeight", styleDisplayHeight)
+        Log.d(TAG, "Saved index: " + currId + ", styles saved flag: " +
+                stylesSavedToDisk + "width: " + styleDisplayWidth + ", height: " + styleDisplayHeight + " in saved state")
     }
     fun nextStyle() {
         currId++
@@ -207,6 +263,16 @@ class SelectStyleActivity : AppCompatActivity() {
         }
         Log.d(TAG, "Setting style number " + currId)
         displayStyle(currId)
+    }
+
+    fun getOrigCanvasPos(): RectF {
+        val rectf = RectF()
+        var baseOffset = currId * 4
+        rectf.left = origCanvasPos[baseOffset++]
+        rectf.top = origCanvasPos[baseOffset++]
+        rectf.right = origCanvasPos[baseOffset++]
+        rectf.bottom = origCanvasPos[baseOffset++]
+        return rectf
     }
 }
 

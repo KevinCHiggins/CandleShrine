@@ -1,7 +1,29 @@
+/*
+ * Copyright (C) 2020 Kevin Higgins
+ * @author Kevin Higgins
+ * I changed the zoom and translate functions to work with a Path instead of Circle. Otherwise this is
+ * all Adam Styrc's design. Original available at https://github.com/adamstyrc/cookie-cutter
+ * - Kevin Higgins 05/08/20
+ *
+ * Copyright (C) 2016 Adam Styrc
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.adamstyrc.cookiecutter;
 
 import android.graphics.Matrix;
 import android.graphics.PointF;
+import android.graphics.RectF;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
@@ -84,28 +106,32 @@ public class CookieCutterTouchListener implements View.OnTouchListener {
         float savedDistanceRight = matrixParams.getX() + imageWidth - scaleCenterPoint.x;
         float savedDistanceTop = scaleCenterPoint.y - matrixParams.getY();
         float savedDistanceBottom = matrixParams.getY() + imageHeight - scaleCenterPoint.y;
-
+        /**
+         * @Kevin Higgins changing from circle to path. Begin changed code.
+         */
+        RectF pathBounds = new RectF();
+        cookieCutterParams.getHoleParams().path.computeBounds(pathBounds, true);
         float imageLeft = scaleCenterPoint.x - savedDistanceLeft * scale;
-        if (imageLeft > circle.getLeftBound()) {
-            scale = (scaleCenterPoint.x - circle.getLeftBound()) / savedDistanceLeft;
+        if (imageLeft > pathBounds.left) {
+            scale = (scaleCenterPoint.x - pathBounds.left) / savedDistanceLeft;
             Logger.log("Scaling exceeded: left " + scale);
         }
 
         float imageRight = scaleCenterPoint.x + savedDistanceRight * scale;
-        if (imageRight < circle.getRightBound()) {
-            scale = (circle.getRightBound() - scaleCenterPoint.x) / savedDistanceRight;
+        if (imageRight < pathBounds.right) {
+            scale = (pathBounds.right - scaleCenterPoint.x) / savedDistanceRight;
             Logger.log("Scaling exceeded: right " + scale);
         }
 
         float imageTop = scaleCenterPoint.y - savedDistanceTop * scale;
-        if (imageTop > circle.getTopBound()) {
-            scale = (scaleCenterPoint.y - circle.getTopBound()) / savedDistanceTop;
+        if (imageTop > pathBounds.top) {
+            scale = (scaleCenterPoint.y - pathBounds.top) / savedDistanceTop;
             Logger.log("Scaling exceeded: top " + scale);
         }
 
         float imageBottom = scaleCenterPoint.y + savedDistanceBottom * scale;
-        if (imageBottom < circle.getBottomBound()) {
-            scale = (circle.getBottomBound() - scaleCenterPoint.y) / savedDistanceBottom;
+        if (imageBottom < pathBounds.bottom) {
+            scale = (pathBounds.bottom - scaleCenterPoint.y) / savedDistanceBottom;
             Logger.log("Scaling exceeded: bottom " + scale);
         }
 
@@ -113,12 +139,17 @@ public class CookieCutterTouchListener implements View.OnTouchListener {
         if (currentScale > cookieCutterParams.getMaxZoom()) {
             scale = cookieCutterParams.getMaxZoom() / matrixParams.getScaleWidth();
         }
-
-        float croppedImageSize = circle.getDiameter() / currentScale;
+        // Leaving this out as my minimum size is determined by the Path
+        /*
+        float croppedImageSizeX = circle.getDiameter() / currentScale;
         Logger.log("croppedImageSize: " + croppedImageSize);
         if (croppedImageSize < cookieCutterParams.getMinImageSize()) {
             scale = circle.getDiameter() / cookieCutterParams.getMinImageSize() / matrixParams.getScaleWidth();
         }
+        */
+         /*
+         End changed code
+          */
 
         matrix.set(savedMatrix);
         matrix.postScale(scale, scale, scaleCenterPoint.x, scaleCenterPoint.y);
@@ -136,6 +167,38 @@ public class CookieCutterTouchListener implements View.OnTouchListener {
         float scaleHeight = matrixValues[4];
         float x = matrixValues[2];
         float y = matrixValues[5];
+
+        /**
+         * @ Kevin Higgins - changing this again to deal with a Path, not a circle
+         */
+
+        int centerX = view.getWidth() / 2;
+        int centerY = view.getHeight() / 2;
+        RectF pathBounds = new RectF();
+        cookieCutterParams.getHoleParams().path.computeBounds(pathBounds, true);
+        int pathWidth = (int) (pathBounds.right - pathBounds.left);
+        int pathHeight = (int) (pathBounds.bottom - pathBounds.top);
+        float width = view.getDrawable().getIntrinsicWidth() * scaleWidth;
+        float height = view.getDrawable().getIntrinsicHeight() * scaleHeight;
+        if (translationX + x > pathBounds.left) {
+            translationX = pathBounds.left - x;
+        } else if (translationX + x + width < pathBounds.right) {
+            translationX = pathBounds.right - x - width;
+        }
+
+        if (translationY + y > pathBounds.top) {
+            translationY = pathBounds.top - y;
+        } else if (translationY + y + height < pathBounds.bottom) {
+            translationY = pathBounds.bottom - y - height;
+        }
+        /*
+         End changed code. Original below (because I've broken the circle functionality and
+         would be nice to put it back!)
+         */
+
+
+        /*
+
 
         int circleCenterX = view.getWidth() / 2;
         int circleCenterY = view.getHeight() / 2;
@@ -155,6 +218,8 @@ public class CookieCutterTouchListener implements View.OnTouchListener {
         } else if (translationY + y + height < circleCenterY + circleRadius) {
             translationY = circleCenterY + circleRadius - y - height;
         }
+
+         */
 
         matrix.postTranslate(translationX, translationY);
     }

@@ -8,5 +8,4 @@ public enum CookieCutterShape {
     CIRCLE,
     HOLE,
     SQUARE,
-    PORTRAIT; // Added by Kevin Higgins on 27/07/20
 }

@@ -1,3 +1,26 @@
+/*
+ * Copyright (C) 2020 Kevin Higgins
+ * @author Kevin Higgins
+ * This class uses a modified version of Adam Styrc's cookie-cutter library for
+ * cropping images using pinch and drag gestures. It is only used
+ * for custom images. It launches the image picker and processes the image it returns.
+ * This image is stored in one of two files - the alternation is to avoid overwriting
+ * the current shrine's image if the user edits their current shrine but then cancels
+ * the edit.
+ *  - Kevin Higgins 05/08/20
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.example.candleshrine
 
 import android.app.Activity
@@ -13,6 +36,7 @@ import android.os.Parcel
 import android.util.Log
 import android.widget.ImageView
 import com.adamstyrc.cookiecutter.CookieCutterShape
+import io.paperdb.Paper
 import kotlinx.android.synthetic.main.activity_crop_image.*
 import kotlinx.android.synthetic.main.activity_select_image.*
 
@@ -27,20 +51,23 @@ import kotlinx.android.synthetic.main.activity_select_image.*
 // will return to SelectImageActivity.
 class CropImageActivity : AppCompatActivity() {
     val TAG = "CropImageActivity"
-
+    var imageWidth: Int = 0 // will load from resources after initialisation
+    var imageHeight: Int = 0 // same
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_crop_image)
+        imageWidth = resources.getInteger(R.integer.standard_sacred_image_width)
+        imageHeight = resources.getInteger(R.integer.standard_sacred_image_height)
         finishedCropButton.setOnClickListener {
             val cropped = crop.croppedBitmap
             // find out what filename is currently *not* referenced by the shrine
-            val prefs = getSharedPreferences(getString(R.string.preferences_filename), Context.MODE_PRIVATE)
-            val filenameInUse = prefs.getString(getString(R.string.preferences_key_current_image_filename), "")
+            //val prefs = getSharedPreferences(getString(R.string.preferences_filename), Context.MODE_PRIVATE)
+            val filenameInUse = Paper.book().read(getString(R.string.database_key_current_image_filename), "")
             val newName: String
             if (filenameInUse.equals(getString(R.string.custom_image_filename_a))){
                 newName = getString(R.string.custom_image_filename_b)
             }
-            else { // even if it was blank, just use a
+            else { // if was originally file "B" OR if it was blank, use file "A"
                 newName = getString(R.string.custom_image_filename_a)
             }
             Log.d(TAG, "Saving cropped image width: " + cropped.width + ", orig width: " + crop.width)
@@ -65,7 +92,9 @@ class CropImageActivity : AppCompatActivity() {
             if (resultCode == Activity.RESULT_OK) {
                 if(data!!.data != null) {
                     try {
+
                         crop.setImageURI(data.data)
+
                         Log.d(TAG, "Image picking successful.")
                     }
                     catch (npe: NullPointerException) {
@@ -84,11 +113,17 @@ class CropImageActivity : AppCompatActivity() {
                     }
                 }
                 else {
-                    Log.d(TAG, "Image picking completed but null returned.")
+                    Log.d(TAG, "Image picking completed but null returned. Finishing crop activity to return to select image.")
+                    setResult(Activity.RESULT_CANCELED)
+                    finish()
                 }
             }
+            // if nothing came back from the image picking, e.g. if the user
+            // tapped back button, then go back to image select with a negative result
             if (resultCode == Activity.RESULT_CANCELED) {
-                Log.d(TAG,"Image picking cancelled.")
+                Log.d(TAG,"Image picking cancelled. Finishing crop activity to return to select image.")
+                setResult(Activity.RESULT_CANCELED)
+                finish()
             }
         }
     }
