@@ -35,6 +35,8 @@ import android.os.Bundle
 import android.os.Parcel
 import android.util.Log
 import android.widget.ImageView
+import androidx.constraintlayout.widget.ConstraintLayout
+import com.adamstyrc.cookiecutter.CookieCutterImageView
 import com.adamstyrc.cookiecutter.CookieCutterShape
 import io.paperdb.Paper
 import kotlinx.android.synthetic.main.activity_crop_image.*
@@ -51,15 +53,16 @@ import kotlinx.android.synthetic.main.activity_select_image.*
 // will return to SelectImageActivity.
 class CropImageActivity : AppCompatActivity() {
     val TAG = "CropImageActivity"
-    var imageWidth: Int = 0 // will load from resources after initialisation
+    var imageWidth: Int = 0 // should load from resources after initialisation
     var imageHeight: Int = 0 // same
+    lateinit var programmaticCrop: CookieCutterImageView
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_crop_image)
         imageWidth = resources.getInteger(R.integer.standard_sacred_image_width)
         imageHeight = resources.getInteger(R.integer.standard_sacred_image_height)
         finishedCropButton.setOnClickListener {
-            val cropped = crop.croppedBitmap
+            val cropped = programmaticCrop.croppedBitmap
             // find out what filename is currently *not* referenced by the shrine
             //val prefs = getSharedPreferences(getString(R.string.preferences_filename), Context.MODE_PRIVATE)
             val filenameInUse = Paper.book().read(getString(R.string.database_key_current_image_filename), "")
@@ -80,10 +83,18 @@ class CropImageActivity : AppCompatActivity() {
             finish()
         }
 
-        crop.params.shape = CookieCutterShape.HOLE
+
         val loadCustomImage = Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI)
         Log.d(TAG, "Started load custom image activity")
         startActivityForResult(loadCustomImage, resources.getInteger(R.integer.request_load_image_code))
+        //Log.d(TAG, "End of creation - Kevin debug - width: " + crop.width + ", height: " + crop.height)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        //Log.d(TAG, "Resuming! Kevin debug. crop.params.shape is hole: " + (crop.params.shape == CookieCutterShape.HOLE))
+        //Log.d(TAG, "Resuming - Kevin debug - width: " + crop.width + ", height: " + crop.height)
+
     }
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -92,10 +103,18 @@ class CropImageActivity : AppCompatActivity() {
             if (resultCode == Activity.RESULT_OK) {
                 if(data!!.data != null) {
                     try {
+                        // rebuild view to avoid bugginess
+                        val params = ConstraintLayout.LayoutParams(crop.layoutParams)
+                        cropImageLayout.removeView(crop)
+                        programmaticCrop = CookieCutterImageView(this)
+                        programmaticCrop.params.shape = CookieCutterShape.HOLE
+                        programmaticCrop.setImageURI(data.data)
 
-                        crop.setImageURI(data.data)
-
+                        cropImageLayout.addView(programmaticCrop, params)
+                        //crop.onImageLoaded()
+                        Log.d(TAG, "Newcrop added, width; " + programmaticCrop.width)
                         Log.d(TAG, "Image picking successful.")
+
                     }
                     catch (npe: NullPointerException) {
                         Log.d(TAG, "Image picking completed but URI was not resolved to a bitmap.")

@@ -256,16 +256,17 @@ class SelectImageActivity : AppCompatActivity() {
     }
     fun nextImage() {
         currIndex++
-        // if null value (i.e. no custom image loaded)... skip its index
-        if (imageIds[currIndex] == 0) {
-            currIndex++ // if custom image is top index, this will wrap to zero in the following clause
-        }
-
         // wrap at top of array
         if (currIndex >= imageIds.size) {
             currIndex = 0
         }
-
+        // if null value (i.e. no custom image loaded)... skip its index
+        if (imageIds[currIndex] == 0) {
+            currIndex++ // if custom image is top index, this will wrap to zero in the following clause
+            if (currIndex >= imageIds.size) {
+                currIndex = 0
+            }
+        }
         setImage()
     }
     fun prevImage() {

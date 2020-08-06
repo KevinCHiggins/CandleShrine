@@ -53,7 +53,7 @@ public class MediaDecoderAlphaMovieView extends GLTextureView {
     private static final int NOT_DEFINED = -1;
     private static final int NOT_DEFINED_COLOR = 0;
 
-    private static final String TAG = "VideoSurfaceView";
+    private static final String TAG = "MDAMV";
 
     private static final float VIEW_ASPECT_RATIO = 4f / 3f;
     private float videoAspectRatio = VIEW_ASPECT_RATIO;
@@ -97,7 +97,7 @@ public class MediaDecoderAlphaMovieView extends GLTextureView {
         obtainRendererOptions(attrs);
 
 
-        System.out.println("Higgs Setting renderer from MediaDecoderAlphaMovieView" + renderer.toString());
+
         setRenderer(renderer);
         this.addOnSurfacePrepareListener();
         bringToFront();
@@ -119,10 +119,10 @@ public class MediaDecoderAlphaMovieView extends GLTextureView {
             String shader = arr.getString(R.styleable.MediaDecoderAlphaMovieView_shader);
             if (shader != null) {
                 renderer.setCustomShader(shader);
-                Log.d("MDAMV", "Setting shader " + shader);
+                Log.d(TAG, "Setting shader " + shader);
             }
             else {
-                Log.d("MDAMV", "Shader null.");
+                Log.d(TAG, "Shader null.");
             }
             float accuracy = arr.getFloat(R.styleable.MediaDecoderAlphaMovieView_accuracy, NOT_DEFINED);
             if (accuracy != NOT_DEFINED) {
@@ -133,7 +133,7 @@ public class MediaDecoderAlphaMovieView extends GLTextureView {
     }
 
     private void addOnSurfacePrepareListener() {
-        Log.d(TAG, "Attempting to add surface prepare listener");
+        Log.d(TAG, "Kevin debug - Attempting to add surface prepare listener");
         if (renderer != null) {
             renderer.setOnSurfacePrepareListener(new VideoRenderer.OnSurfacePrepareListener() {
                 @Override
@@ -146,7 +146,7 @@ public class MediaDecoderAlphaMovieView extends GLTextureView {
                     }
                 }
             });
-            Log.d(TAG, "Added surface prepare listener");
+            Log.d(TAG, "Kevin debug - Added surface prepare listener");
         }
     }
 
@@ -190,13 +190,13 @@ public class MediaDecoderAlphaMovieView extends GLTextureView {
         extractorReady = true;
 
         isDataSourceSet = true;
-        Log.d(TAG, "Set video from URI successful.");
+        Log.d(TAG, "Kevin debug - Set video from URI successful.");
         if (isSurfaceCreated) {
-            Log.d(TAG, "Surface created so calling onReady().");
+            Log.d(TAG, "Kevin debug - Surface created so calling onReady().");
             onReady();
         }
         else {
-            Log.d(TAG, "Surface not created yet so waiting on surface created listener.");
+            Log.d(TAG, "Kevin debug - Surface not created yet so waiting on surface created listener.");
         }
 
     }
@@ -209,25 +209,29 @@ public class MediaDecoderAlphaMovieView extends GLTextureView {
     public void onTimeUpdate(TimeAnimator animation, long totalTime, long deltaTime) {
 
 
-        // check whether End of File flag (which happens to be 4) is set. Note Kotlin "and" rather than "&"
+
         boolean isEos =
                 (extractor.getSampleFlags() & MediaCodec.BUFFER_FLAG_END_OF_STREAM) == MediaCodec.BUFFER_FLAG_END_OF_STREAM;
 
         if (!isEos & extractorReady) {
+            Log.d(TAG, "Kevin debug - attempting to write extractor frame to codec");
             // Try to submit the sample to the codec and if successful advance the
             // extractor to the next available sample to read.
+            long time = extractor.getSampleTime();
             boolean result = decoder.writeSample(extractor, false,
-                    extractor.getSampleTime(), extractor.getSampleFlags());
+                    time, extractor.getSampleFlags());
 
             if (result) {
+                Log.d(TAG, "Kevin debug - successfully wrote to codec" + decoder.toString() + " from extractor " + extractor.toString() + " sample time " + time);
                 // Advancing the extractor is a blocking operation and it MUST be
                 // executed outside the main thread
-                System.out.println("Higgs advancing from time " + extractor.getSampleTime());
+                System.out.println("Kevin debug - " + extractor.toString() + " not ready till advances from " + extractor.getSampleTime());
                 extractorReady = false;
                 new Thread(new Runnable() {
                     public void run() {
                         extractor.advance();
                         extractorReady = true;
+                        Log.d(TAG, "Extractor " + extractor.toString() + "ready.");
                     }
                 }).start();
 
@@ -235,7 +239,7 @@ public class MediaDecoderAlphaMovieView extends GLTextureView {
         }
         else if (isEos) {
             extractor.seekTo(0, MediaExtractor.SEEK_TO_CLOSEST_SYNC);
-            System.out.println("Higgs restarting");
+            System.out.println("Kevin debug - extractor " + extractor.toString() + " seeking to start");
         }
         // END_INCLUDE(write_sample)
 

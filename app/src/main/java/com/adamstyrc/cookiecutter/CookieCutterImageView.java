@@ -45,7 +45,7 @@ import androidx.appcompat.widget.AppCompatImageView;
 /**
  * Created by adamstyrc on 31/03/16.
  */
-public class CookieCutterImageView extends ImageView {
+public class CookieCutterImageView extends AppCompatImageView {
 
     private CookieCutterParams cookieCutterParams;
 
@@ -68,7 +68,8 @@ public class CookieCutterImageView extends ImageView {
 
     @TargetApi(value = 21)
     public CookieCutterImageView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-        super(context, attrs, defStyleAttr, defStyleRes);
+
+        super(context, attrs, defStyleRes);
 
         init();
     }
@@ -78,8 +79,17 @@ public class CookieCutterImageView extends ImageView {
 
         cookieCutterParams = new CookieCutterParams();
         setDefaultRadius();
-
-        if (getDrawable() != null) {
+        /**
+         * Modified this because I am adding the image "programatically" as they say on Stack Overflow
+         * I could be totally wrong but it seems the original design only allows for image to
+         * defined in the XML...
+         */
+        //if (getDrawable() != null) {
+        if (true) {
+            Log.d("CookieCutterImageView", "Hacked to always add listener ");
+            /**
+             * End modified code
+             */
             ViewTreeObserver vto = getViewTreeObserver();
             vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                 @Override
@@ -91,7 +101,7 @@ public class CookieCutterImageView extends ImageView {
         }
     }
 
-    private void onImageLoaded() {
+    public void onImageLoaded() {
         cookieCutterParams.updateWithView(getWidth(), getHeight());
         setImageCentered();
         setOnTouchListener(new CookieCutterTouchListener(cookieCutterParams, getImageMatrix()));
@@ -100,7 +110,7 @@ public class CookieCutterImageView extends ImageView {
     private void setImageCentered() {
         Matrix matrix = getImageMatrix();
         Bitmap bitmap = getBitmap();
-
+        Log.d("CookieCutterImageView", "In setImageCentered");
         if (bitmap != null && cookieCutterParams.getCircle() != null) {
             RectF drawableRect = new RectF(0, 0, bitmap.getWidth(), bitmap.getHeight());
             Log.d("CookieCutterImageView", "Kevin debug - width prop: " + getWidth() + ", height: " + getHeight());

@@ -27,6 +27,7 @@ import android.media.MediaFormat;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.Surface;
 
 import androidx.annotation.RequiresApi;
@@ -328,7 +329,7 @@ public class MediaCodecWrapper {
             currBufferInfo.presentationTimeUs,
             currBufferInfo.flags);
             result = true;
-            System.out.println("Higgs returned valid buffer info");
+            Log.d("MediaCodecWrapper", this.toString() + " Kevin debug - reporting buffer ready");
         }
 
 
@@ -348,7 +349,7 @@ public class MediaCodecWrapper {
     public void popSample(boolean render) {
         // dequeue available buffers and synchronize our data structures with the codec.
         update();
-        System.out.println("Higgs Releasing buffer " + currOutputBufferId);
+        Log.d("MediaCodecWrapper", this.toString() + "Kevin debug - releasing buffer for rendering: " + currOutputBufferId);
 
        mDecoder.releaseOutputBuffer(currOutputBufferId, true);
 
@@ -378,9 +379,11 @@ public class MediaCodecWrapper {
         // Likewise with output buffers. If the output buffers have changed, start using the
         // new set of output buffers. If the output format has changed, notify listeners.
         MediaCodec.BufferInfo info = new MediaCodec.BufferInfo();
+        Log.d("MediaCodecWrapper", this.toString() + "Kevin debug - Updating - try dequeue a buffer of decoded output");
         int outputBufferId = mDecoder.dequeueOutputBuffer(info, 10);
 
         if (outputBufferId >= 0) {
+
 
             // checking the format is in the example code, but I'm not sure if I'll be using it...
             MediaFormat outputFormat = mDecoder.getOutputFormat(outputBufferId);
@@ -393,19 +396,19 @@ public class MediaCodecWrapper {
             // longer are using a queue
 
             currBufferInfo = info;
-            System.out.println("Higgs buffer " + outputBufferId + " info is " + currBufferInfo.toString() + " time " + currBufferInfo.presentationTimeUs);
+            Log.d("MediaCodecWrapper", this.toString() + "Kevin debug - buffer " + outputBufferId + " dequeued with info is " + currBufferInfo.toString() + " time " + currBufferInfo.presentationTimeUs);
         }
         else if (outputBufferId == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
-            System.out.println("Higgs negative buffer id returned: " + outputBufferId);
+            Log.d("MediaCodecWrapper", this.toString() + "Kevin debug -  negative buffer id returned: " + outputBufferId);
             // ignore this information message as we are checking format every sample, above
         }
         else {
-            System.out.println("Higgs negative buffer id returned: " + outputBufferId);
+            Log.d("MediaCodecWrapper", this.toString() + "Kevin debug - no buffer of decoded data ready; code returend code " + outputBufferId);
         }
         // save the current buffer id BUT NOT IF IT'S AN ERROR CODE; save a check for peekSample to refer to
         if (outputBufferId >= 0) { currOutputBufferId = outputBufferId; outputReady = true; }
         else { outputReady = false; }
-        System.out.println("Wait code: " + MediaCodec.INFO_TRY_AGAIN_LATER);
+
     }
         /*
         while ((index = mDecoder.dequeueOutputBuffer(info, 0)) !=  MediaCodec.INFO_TRY_AGAIN_LATER) {
