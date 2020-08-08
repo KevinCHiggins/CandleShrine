@@ -10,10 +10,22 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+        <TextView
+            android:id="@+id/shrineLoadingText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/colorAccent"
+            android:background="@color/colorPrimaryDark"
+            android:text="Please wait. Loading shrine..."
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
         <ImageView
             android:id="@+id/styleDisplayFullscreenShrine"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:visibility="invisible"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
@@ -36,6 +48,7 @@
                 android:layout_width="600px"
                 android:layout_height="800px"
                 android:layerType="hardware"
+                android:visibility="invisible"
                 app:layout_constraintRight_toRightOf="parent"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
@@ -48,18 +61,8 @@
 
             android:id = "@+id/candleHolderFullscreenShrine">
 
-            <com.example.candleshrine.MediaDecoderAlphaMovieView
-                android:id="@+id/thicknessView"
-                android:layout_width="80dp"
-                android:layout_height="110dp"
-                app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintHorizontal_bias="0.525"
-                app:layout_constraintVertical_bias="0.78"
-                custom:shader="@string/shader_custom"/>
-            <com.example.candleshrine.MediaDecoderAlphaMovieView
+
+            <com.example.candleshrine.AlphaMovieView
                 android:id="@+id/flameView"
                 android:layout_width="80dp"
                 android:layout_height="110dp"
@@ -70,17 +73,7 @@
                 app:layout_constraintHorizontal_bias="0.525"
                 app:layout_constraintVertical_bias="0.78"
                 custom:shader="@string/shader_standard"/>
-            <com.example.candleshrine.MediaDecoderAlphaMovieView
-                android:id="@+id/blurView"
-                android:layout_width="80dp"
-                android:layout_height="110dp"
-                app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintHorizontal_bias="0.525"
-                app:layout_constraintVertical_bias="0.78"
-                custom:shader="@string/shader_faint"/>
+
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>

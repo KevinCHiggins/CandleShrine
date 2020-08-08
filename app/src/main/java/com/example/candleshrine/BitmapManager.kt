@@ -52,6 +52,7 @@ class BitmapManager {
 
         val fileInputStream = context.openFileInput(filename)
         return BitmapFactory.decodeStream(fileInputStream)
+        fileInputStream.close()
     }
     fun getCentreFitted(context: Context, assetName: String, width: Int, height: Int): Bitmap {
         Log.d(TAG, "Trying to load and then resize asset to " + width + "x" + height)
@@ -87,7 +88,8 @@ class BitmapManager {
             Log.d(TAG, "Desired aspect ratio " + dstAspectRatio + " is broader than orig " + rAspectRatio)
         }
         Log.d(TAG, "Grabbing " + grabDims.x + "x" + grabDims.y + " portion from full bitmap")
-
+        asset.close()
+        Log.d(TAG, "Get centre fitted - closing asset 1st x")
         // workaround for this bug https://stackoverflow.com/questions/39316069/bitmapfactory-decodestream-from-assets-returns-null-on-android-7
         // is to reopen the stream
         asset = context.assets.open(assetName)
@@ -107,6 +109,8 @@ class BitmapManager {
             bitmapCropped, (grabDims.x / scale).roundToInt(), (grabDims.y / scale).roundToInt(), true
         )
         bitmapCropped.recycle()
+        asset.close()
+        Log.d(TAG, "Get centre fitted - closed bitmap input stream 2nd x")
         Log.d("getCroppedAndScaled", "Bitmap resized to x " + bitmapCroppedAndScaled.width + " y " + bitmapCroppedAndScaled.height)
         return bitmapCroppedAndScaled
     }

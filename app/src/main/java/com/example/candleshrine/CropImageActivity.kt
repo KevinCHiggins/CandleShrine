@@ -62,6 +62,8 @@ class CropImageActivity : AppCompatActivity() {
         imageWidth = resources.getInteger(R.integer.standard_sacred_image_width)
         imageHeight = resources.getInteger(R.integer.standard_sacred_image_height)
         finishedCropButton.setOnClickListener {
+            cropImageLoadingText.text = "Please wait. Saving image..."
+            finishedCropButton.isEnabled = false
             val cropped = programmaticCrop.croppedBitmap
             // find out what filename is currently *not* referenced by the shrine
             //val prefs = getSharedPreferences(getString(R.string.preferences_filename), Context.MODE_PRIVATE)
@@ -73,7 +75,7 @@ class CropImageActivity : AppCompatActivity() {
             else { // if was originally file "B" OR if it was blank, use file "A"
                 newName = getString(R.string.custom_image_filename_a)
             }
-            Log.d(TAG, "Saving cropped image width: " + cropped.width + ", orig width: " + crop.width)
+            Log.d(TAG, "Saving cropped image width: " + cropped.width + ", orig width: " + programmaticCrop.width)
             val bitmapManager = BitmapManager()
             bitmapManager.save(this, cropped, newName)
             Log.d(TAG, "Setting successful result and finishing")
@@ -104,8 +106,12 @@ class CropImageActivity : AppCompatActivity() {
                 if(data!!.data != null) {
                     try {
                         // rebuild view to avoid bugginess
-                        val params = ConstraintLayout.LayoutParams(crop.layoutParams)
-                        cropImageLayout.removeView(crop)
+
+                        val params = ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT, ConstraintLayout.LayoutParams.MATCH_PARENT)
+                        params.topToTop = ConstraintLayout.LayoutParams.PARENT_ID
+                        params.bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID
+                        params.leftToLeft = ConstraintLayout.LayoutParams.PARENT_ID
+                        params.rightToRight = ConstraintLayout.LayoutParams.PARENT_ID
                         programmaticCrop = CookieCutterImageView(this)
                         programmaticCrop.params.shape = CookieCutterShape.HOLE
                         programmaticCrop.setImageURI(data.data)

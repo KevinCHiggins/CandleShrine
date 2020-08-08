@@ -39,6 +39,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.PersistableBundle
 import android.util.Log
+import android.view.View
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
 import io.paperdb.Paper
@@ -49,7 +50,7 @@ import kotlin.math.roundToInt
 // Activities flow
 // There are no interactions available from this activity. The user taps the back button to get
 // back to the main menu, which will always be below this in the stack.
-class FullscreenShrineActivity : AppCompatActivity(), TimeAnimator.TimeListener, MediaDecoderAlphaMovieView.readyListener {
+class FullscreenShrineActivity : AppCompatActivity(), TimeAnimator.TimeListener {
     val paintSacredImage = Paint()
     val TAG = "FSActivity"
     val timer = TimeAnimator()
@@ -79,7 +80,7 @@ class FullscreenShrineActivity : AppCompatActivity(), TimeAnimator.TimeListener,
     var extractorsReady = 0
     lateinit var imagePos: RectF
 
-    val imageIds = intArrayOf(R.drawable.sacredimage1, R.drawable.sacredimage2, R.drawable.sacredimage3, R.drawable.sacredimage4, 0)
+    val imageIds = intArrayOf(R.drawable.sacredimage1, R.drawable.sacredimage2, R.drawable.sacredimage3, R.drawable.sacredimage4, R.drawable.sacredimage5, R.drawable.sacredimage6, R.drawable.sacredimage7, R.drawable.sacredimage8, R.drawable.sacredimage9, 0)
     override fun onBackPressed() {
         Log.d(TAG, "Intercepted back button press to avoid minimising app")
         val mainMenu = Intent()
@@ -90,14 +91,13 @@ class FullscreenShrineActivity : AppCompatActivity(), TimeAnimator.TimeListener,
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         loadValues(savedInstanceState)
-        val transformer = RectFTransformer()
+
 
         val origPos = getOrigCandlePos()
         Log.d(TAG, "Transforming candle location data " + origPos.toString() + " with dst width " + styleDisplayWidth + ", height: " + styleDisplayHeight + ", index: " + styleIndex)
 
-        val candlePos = transformer.transform(getOrigCandlePos(), styleDisplayWidth, styleDisplayHeight)
-        val centre = candlePos.bottom - ((candlePos. bottom - candlePos.top)/2)
-        val bias = (centre / styleDisplayHeight)
+
+        val bias = calcBias(styleDisplayWidth, styleDisplayHeight)
         Log.d(TAG, "Bias: " + bias)
         if (bias > 0.78) {
             Log.d(TAG, "Loading for bias: 0.78+")
@@ -128,8 +128,11 @@ class FullscreenShrineActivity : AppCompatActivity(), TimeAnimator.TimeListener,
             setContentView(R.layout.activity_fullscreen_shrine_higher)
         }
 
-        timer.setTimeListener(this)
 
+
+
+        timer.setTimeListener(this)
+        flameView.setOnVideoStartedListener { this }
 
 
         imageDisplayFullscreenShrine.top = imagePos.top.toInt()
@@ -140,6 +143,8 @@ class FullscreenShrineActivity : AppCompatActivity(), TimeAnimator.TimeListener,
         initialiseCandleStatus()
         if (candleIsLit) {
             Log.d(TAG, "Setting up candle flame as candle is lit")
+            // won't come on till video starts playing!
+            styleLitDisplayFullscreenShrine.imageAlpha = 0
             setUpFlame()
         }
         else {
@@ -197,6 +202,10 @@ class FullscreenShrineActivity : AppCompatActivity(), TimeAnimator.TimeListener,
                         styleLitDisplayFullscreenShrine.setImageBitmap(fullyLitStyle)
                         styleDisplayFullscreenShrine.setImageBitmap(backgroundStyle)
                         Log.d(TAG, "Loaded lit style bitmaps from database")
+                        styleDisplayFullscreenShrine.post {
+                            styleDisplayFullscreenShrine.visibility = View.VISIBLE
+                            imageDisplayFullscreenShrine.visibility = View.VISIBLE
+                        }
                     }
                 }
             }
@@ -206,6 +215,10 @@ class FullscreenShrineActivity : AppCompatActivity(), TimeAnimator.TimeListener,
                     runOnUiThread {
                         styleDisplayFullscreenShrine.setImageBitmap(backgroundStyle)
                         Log.d(TAG, "Loaded unlit style from database on object: " + styleDisplayFullscreenShrine.toString())
+                        styleDisplayFullscreenShrine.post {
+                            styleDisplayFullscreenShrine.visibility = View.VISIBLE
+                            imageDisplayFullscreenShrine.visibility = View.VISIBLE
+                        }
                     }
 
                 }
@@ -217,6 +230,15 @@ class FullscreenShrineActivity : AppCompatActivity(), TimeAnimator.TimeListener,
         paintSacredImage.xfermode = PorterDuffXfermode(PorterDuff.Mode.MULTIPLY)
         Log.d(TAG, "Image display layer type " + imageDisplayFullscreenShrine.layerType)
         imageDisplayFullscreenShrine.setLayerPaint(paintSacredImage)
+
+
+    }
+    fun calcBias(width: Int, height: Int):Float {
+        val transformer = RectFTransformer()
+        val candlePos = transformer.transform(getOrigCandlePos(), width, height)
+        val centre = candlePos.bottom - ((candlePos. bottom - candlePos.top)/2)
+        val bias = (centre / height)
+        return bias
     }
     fun setUpFlame() {
 
@@ -252,41 +274,57 @@ class FullscreenShrineActivity : AppCompatActivity(), TimeAnimator.TimeListener,
         flameView.layoutParams = candleSize
         blurView.layoutParams = candleSize
                  */
-
-        val flameUri = Uri.parse("android.resource://" + packageName + "/" + R.raw.candle)
-        val thicknessUri = Uri.parse("android.resource://" + packageName + "/" + R.raw.candle)
-        val blurUri = Uri.parse("android.resource://" + packageName + "/" + R.raw.blur7)
-        flameView.setVideoFromUri(this, flameUri)
-        thicknessView.setVideoFromUri(this, thicknessUri)
-        blurView.setVideoFromUri(this, blurUri)
-        flameView.addReadyListener(this)
-        thicknessView.addReadyListener(this)
-        blurView.addReadyListener(this)
         val paintScreenMode = Paint()
         paintScreenMode.xfermode = PorterDuffXfermode(PorterDuff.Mode.SCREEN)
         flameView.setLayerPaint(paintScreenMode)
-        blurView.setLayerPaint(paintScreenMode)
+
+        val flameUri = Uri.parse("android.resource://" + packageName + "/" + R.raw.candle)
+        //val thicknessUri = Uri.parse("android.resource://" + packageName + "/" + R.raw.candle)
+        //val blurUri = Uri.parse("android.resource://" + packageName + "/" + R.raw.blur7)
+        flameView.setVideoFromUri(this, flameUri)
+        //thicknessView.setVideoFromUri(this, thicknessUri)
+        //blurView.setVideoFromUri(this, blurUri)
+
+        //blurView.setLayerPaint(paintScreenMode)
+        Log.d(TAG, "Flame setup complete")
 
 
     }
     override fun onStart() {
         super.onStart()
 
+        if (candleIsLit) {
+            //thicknessView.start()
+            timer.start()
+            flameView.start()
+            //blurView.start()
+
+        }
+
+
     }
     override fun onPause() {
         super.onPause()
         timer.pause()
+        //thicknessView.onPause()
+        flameView.onPause()
+        //blurView.onPause()
     }
     override fun onResume() {
         super.onResume()
         timer.resume()
+        //thicknessView.onResume()
+
+        flameView.onResume()
+        //blurView.onResume()
     }
     override fun onTimeUpdate(animation: TimeAnimator?, totalTime: Long, deltaTime: Long) {
         val result = 0f + (noiseOctave1.sampleAt(totalTime)*64f) + (noiseOctave2.sampleAt(totalTime)*64f) + (noiseOctave3.sampleAt(totalTime)*128f)
         styleLitDisplayFullscreenShrine.imageAlpha = result.toInt()
-        thicknessView.onTimeUpdate(animation, totalTime, deltaTime)
-        flameView.onTimeUpdate(animation, totalTime, deltaTime)
-        blurView.onTimeUpdate(animation, totalTime, deltaTime)
+        Log.d(TAG, "Alpha is: " + result)
+        //thicknessView.onTimeUpdate(animation, totalTime, deltaTime)
+        //flameView.onTimeUpdate(animation, totalTime, deltaTime)
+        //blurView.onTimeUpdate(animation, totalTime, deltaTime)
     }
 
     override fun onSaveInstanceState(outState: Bundle, outPersistentState: PersistableBundle) {
@@ -296,16 +334,7 @@ class FullscreenShrineActivity : AppCompatActivity(), TimeAnimator.TimeListener,
         outState.putInt("StyleDisplayHeight", styleDisplayHeight)
     }
 
-    override fun onReady(m: MediaDecoderAlphaMovieView?) {
-        Log.d(TAG, "MediaDecoderAlphaMovieView " + m.toString() + " reported ready (surface available).")
-        extractorsReady++
-        if (extractorsReady == 3) { // this is important - we need to wait till every video is ready
-            runOnUiThread { timer.start()
-            }
 
-            Log.d(TAG, "Started timer as all MediaDecoderAlphaMovieViews have called their readyListener")
-        }
-    }
     fun loadValues(savedInstanceState: Bundle?) {
         if (savedInstanceState != null && savedInstanceState.containsKey("imagePos") &&
             savedInstanceState.containsKey("styleDisplayWidth") &&
@@ -349,6 +378,8 @@ class FullscreenShrineActivity : AppCompatActivity(), TimeAnimator.TimeListener,
         rectf.bottom = origCandlePos[baseOffset++]
         return rectf
     }
+
+
 }
 
 

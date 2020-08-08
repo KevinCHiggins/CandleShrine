@@ -77,6 +77,7 @@ class SelectStyleActivity : AppCompatActivity() {
 
     var currId = 0
     override fun onCreate(savedInstanceState: Bundle?) {
+        Paper.init(this)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_select_style)
         // Restore flags and style index from saved state or database if possible
@@ -95,6 +96,7 @@ class SelectStyleActivity : AppCompatActivity() {
             currId = Paper.book().read(getString(R.string.database_key_style_index), 0) // will be 0 on first run or if none saved
             stylesSavedToDisk = Paper.book().read(getString(R.string.database_key_resized_unlit_styles_saved), false)
             Log.d(TAG, "Restored from database (or using defaults) - index: " + currId + ", saved flag: " + stylesSavedToDisk)
+
         }
 
 
@@ -166,7 +168,10 @@ class SelectStyleActivity : AppCompatActivity() {
 
 
              */
-
+            nextStyleButton.isEnabled = false
+            previousStyleButton.isEnabled = false
+            finishedStyleButton.isEnabled = false
+            styleLoadingText.text = "Please wait. Saving custom data..."
             Log.d(TAG, "Saving absolute image position for current screen size")
             val transformer = RectFTransformer()
             Paper.book().write<RectF>(getString(R.string.database_key_actual_image_rectf), transformer.transform(getOrigCanvasPos(), styleDisplayWidth, styleDisplayHeight))
@@ -176,6 +181,7 @@ class SelectStyleActivity : AppCompatActivity() {
             Log.d(TAG, "Saving complete: " + Paper.book().contains((getString(R.string.database_key_actual_image_rectf))) + ", with " + Paper.book().read(getString(R.string.database_key_actual_image_rectf)))
 
             if (stylesSavedToDisk) {
+
                 launchSelectImage()
             }
             else {
@@ -189,6 +195,12 @@ class SelectStyleActivity : AppCompatActivity() {
 
     }
     fun launchSelectImage() {
+        // reset things for if we come back (press back button
+        styleLoadingText.text = ""
+        finishedStyleButton.isEnabled = true
+        previousStyleButton.isEnabled = true
+        nextStyleButton.isEnabled = true
+
         val selectImage = Intent()
         selectImage.setComponent(ComponentName(this, getString(R.string.app_fullname).plus(".SelectImageActivity")))
         selectImage.putExtra(getString(R.string.intent_key_style_index), currId)
@@ -213,10 +225,11 @@ class SelectStyleActivity : AppCompatActivity() {
         styles[index] = bitmapManager.getCentreFitted(this, assetName, dstWidth, dstHeight)
     }
     fun loadBitmap(index: Int) {
-        val bitmapManager = BitmapManager()
+        //val bitmapManager = BitmapManager()
         val assetName = getString(R.string.style_resized_cropped_filename) + index.toString() + ".png"
         Log.d(TAG, "Attempting to load bitmap from asset: " + assetName)
         styles[index] = bitmapManager.load(this, assetName)
+
     }
     fun saveBitmap(index: Int) {
         val bitmapManager = BitmapManager()

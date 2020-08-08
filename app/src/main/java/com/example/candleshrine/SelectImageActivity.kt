@@ -53,7 +53,7 @@ class SelectImageActivity : AppCompatActivity() {
     //lateinit var prefs: SharedPreferences
     var styleIndex = 0
     // zero value at end of array indicates no custom image loaded so far
-    val imageIds = intArrayOf(R.drawable.sacredimage1, R.drawable.sacredimage2, R.drawable.sacredimage3, R.drawable.sacredimage4, 0)
+    val imageIds = intArrayOf(R.drawable.sacredimage1, R.drawable.sacredimage2, R.drawable.sacredimage3, R.drawable.sacredimage4, R.drawable.sacredimage5, R.drawable.sacredimage6, R.drawable.sacredimage7, R.drawable.sacredimage8, R.drawable.sacredimage9, 0)
     var currIndex = 0
     lateinit var imagePos: RectF
     // special value inserted at end of array if a custom image has been loaded... crude, I know
@@ -166,56 +166,68 @@ class SelectImageActivity : AppCompatActivity() {
                 }
             }
         }
+        imageLoadingText.text = ""
         nextImageButton.setOnClickListener { nextImage() }
         previousImageButton.setOnClickListener { prevImage() }
         finishedImageButton.setOnClickListener {
             Log.d(TAG, "Button clicked to finish image select")
-            // here we handle the ending of the "Build/Edit Shrine" use case
-            // save vals in preferences and in persistence, finish everything except main menu, and launch shrine view
-            Paper.book().write(getString(R.string.database_key_image_index), currIndex)
-            // *now* we save the styleIndex passed in the Intent, because it's at this stage that
-            // the shrine is completed/confirmed, record its style...
-            Paper.book().write(getString(R.string.database_key_style_index), styleIndex)
-            // record its existence
-            Paper.book().write(getString(R.string.database_key_shrine_built), true)
-            // quench any burning candle
-            Paper.book().delete(getString(R.string.database_key_last_candle_lighting_timestamp))
+            imageLoadingText.text = "Please wait. Building shrine..."
+            nextImageButton.isEnabled = false
+            previousImageButton.isEnabled = false
+            custom.isEnabled = false
+            finishedImageButton.isEnabled = false
+            thread {
+                // here we handle the ending of the "Build/Edit Shrine" use case
+                // save vals in preferences and in persistence, finish everything except main menu, and launch shrine view
+                Paper.book().write(getString(R.string.database_key_image_index), currIndex)
+                // *now* we save the styleIndex passed in the Intent, because it's at this stage that
+                // the shrine is completed/confirmed, record its style...
+                Paper.book().write(getString(R.string.database_key_style_index), styleIndex)
+                // record its existence
+                Paper.book().write(getString(R.string.database_key_shrine_built), true)
+                // quench any burning candle
+                Paper.book().delete(getString(R.string.database_key_last_candle_lighting_timestamp))
 
 
 
-            // save the image to the disk if it's custom
-            if (imageIds[currIndex] == customId) {
-                val oldFilename = Paper.book().read(getString(R.string.database_key_current_image_filename), "")
-                var newName = ""
-                if (oldFilename == getString(R.string.custom_image_filename_a)) {
-                    newName = getString(R.string.custom_image_filename_b)
-                    Paper.book().write(getString(R.string.database_key_current_image_filename), newName)
+                // save the image to the disk if it's custom
+                if (imageIds[currIndex] == customId) {
+                    val oldFilename = Paper.book().read(getString(R.string.database_key_current_image_filename), "")
+                    var newName = ""
+                    if (oldFilename == getString(R.string.custom_image_filename_a)) {
+                        newName = getString(R.string.custom_image_filename_b)
+                        Paper.book().write(getString(R.string.database_key_current_image_filename), newName)
+                    }
+                    else {
+                        newName = getString(R.string.custom_image_filename_a)
+                        Paper.book().write(getString(R.string.database_key_current_image_filename), newName)
+                    }
+
+                    Log.d(TAG, "Custom image path (to be used by fullscreen shrine) was previously " + oldFilename + " but is now " + newName)
+                }
+
+
+                Log.d(TAG, "Saving resized/cropped style lit")
+                val bitmapUtil = BitmapManager()
+                val halfLitStyleFromDatabase = bitmapUtil.getCentreFitted(this, getString(R.string.bitmaps_half_base_filename) + styleIndex+".png", styleBitmap.width, styleBitmap.height)
+                val fullyLitStyleFromDatabase = bitmapUtil.getCentreFitted(this, getString(R.string.bitmaps_full_base_filename) + styleIndex+".png", styleBitmap.width, styleBitmap.height)
+
+                if (halfLitStyleFromDatabase != null && fullyLitStyleFromDatabase != null) {
+                    bitmapUtil.save(this, halfLitStyleFromDatabase, getString(R.string.style_half_resized_cropped_filename)+styleIndex+".png")
+                    bitmapUtil.save(this, fullyLitStyleFromDatabase, getString(R.string.style_full_resized_cropped_filename)+styleIndex+".png")
+
+                    Log.d(TAG, "Resized lit and saved as final lit")
                 }
                 else {
-                    newName = getString(R.string.custom_image_filename_a)
-                    Paper.book().write(getString(R.string.database_key_current_image_filename), newName)
+                    Log.d(TAG, "Couldn't load lit style bitmaps from file for final saving")
+                    finish()
                 }
-
-                Log.d(TAG, "Custom image path (to be used by fullscreen shrine) was previously " + oldFilename + " but is now " + newName)
+                runOnUiThread {
+                    launchFullscreenShrine()
+                }
             }
 
 
-            Log.d(TAG, "Saving resized/cropped style lit")
-            val bitmapUtil = BitmapManager()
-            val halfLitStyleFromDatabase = bitmapUtil.getCentreFitted(this, getString(R.string.bitmaps_half_base_filename) + styleIndex+".png", styleBitmap.width, styleBitmap.height)
-            val fullyLitStyleFromDatabase = bitmapUtil.getCentreFitted(this, getString(R.string.bitmaps_full_base_filename) + styleIndex+".png", styleBitmap.width, styleBitmap.height)
-
-            if (halfLitStyleFromDatabase != null && fullyLitStyleFromDatabase != null) {
-                bitmapUtil.save(this, halfLitStyleFromDatabase, getString(R.string.style_half_resized_cropped_filename)+styleIndex+".png")
-                bitmapUtil.save(this, fullyLitStyleFromDatabase, getString(R.string.style_full_resized_cropped_filename)+styleIndex+".png")
-
-                Log.d(TAG, "Resized lit and saved as final lit")
-            }
-            else {
-                Log.d(TAG, "Couldn't load lit style bitmaps from file for final saving")
-                finish()
-            }
-            launchFullscreenShrine()
         }
         custom.setOnClickListener {
             val cropImage = Intent()
@@ -302,7 +314,7 @@ class SelectImageActivity : AppCompatActivity() {
                     imageIds[imageIds.size - 1] =
                         customId // set value to indicate custom image loaded
                     imageDisplaySelectImage.setImageBitmap(bitmap)
-                    Log.d(TAG, "Image picking and cropping successful.")
+                    Log.d(TAG, "Image picking and cropping successful. New image width: " + bitmap!!.width)
                 }
             }
             if ((resultCode == Activity.RESULT_CANCELED) || (!imagePickSuccessful)) {
