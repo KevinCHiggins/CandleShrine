@@ -52,8 +52,8 @@ class SelectStyleActivity : AppCompatActivity() {
     val origCanvasPos = arrayOf<Float>(
         708f,
         1457f,
-        1212f,
-        2164f,
+        1216f,
+        2166f,
         708f,
         1267f,
         1212f,
