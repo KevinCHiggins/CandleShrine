@@ -9,14 +9,14 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".StrikeMatchActivity"></activity>
-        <activity android:name=".EditTextsActivity" />
-        <activity android:name=".SelectTextsActivity" />
-        <activity android:name=".CropImageActivity" />
-        <activity android:name=".SelectImageActivity" />
-        <activity android:name=".SelectStyleActivity" />
-        <activity android:name=".FullscreenShrineActivity" />
-        <activity android:name=".MainMenuActivity" android:launchMode="singleTask" >
+        <activity android:name=".StrikeMatchActivity" android:screenOrientation="portrait"></activity>
+        <activity android:name=".EditTextsActivity" android:screenOrientation="portrait"/>
+        <activity android:name=".SelectTextsActivity" android:screenOrientation="portrait"/>
+        <activity android:name=".CropImageActivity" android:screenOrientation="portrait"/>
+        <activity android:name=".SelectImageActivity" android:screenOrientation="portrait"/>
+        <activity android:name=".SelectStyleActivity" android:screenOrientation="portrait"/>
+        <activity android:name=".FullscreenShrineActivity" android:screenOrientation="portrait"/>
+        <activity android:name=".MainMenuActivity" android:launchMode="singleTask" android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

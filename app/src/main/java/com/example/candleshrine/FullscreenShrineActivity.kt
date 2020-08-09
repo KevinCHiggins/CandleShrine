@@ -319,7 +319,7 @@ class FullscreenShrineActivity : AppCompatActivity(), TimeAnimator.TimeListener 
         //blurView.onResume()
     }
     override fun onTimeUpdate(animation: TimeAnimator?, totalTime: Long, deltaTime: Long) {
-        val result = 0f + (noiseOctave1.sampleAt(totalTime)*64f) + (noiseOctave2.sampleAt(totalTime)*64f) + (noiseOctave3.sampleAt(totalTime)*128f)
+        val result = (noiseOctave1.sampleAt(totalTime)*64f) + (noiseOctave2.sampleAt(totalTime)*64f) + (noiseOctave3.sampleAt(totalTime)*128f)
         styleLitDisplayFullscreenShrine.imageAlpha = result.toInt()
         Log.d(TAG, "Alpha is: " + result)
         //thicknessView.onTimeUpdate(animation, totalTime, deltaTime)

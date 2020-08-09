@@ -59,8 +59,13 @@ class SmoothNoise(_wavelength: Int) {
             Log.d(TAG, "Shifted one wavelength, new vals " + previousVal + " " + latestVal)
         }
         val linear: Float
+        // create a float value between 0 and 1 (representing previous point and latest point)
+        // for t, the sampling position
         val t = ((x - previousPoint) / wavelength.toFloat())
+        // remap T with a SmoothStep formula so that it changes more slowly at the start and end
         val remappedT = t * t * (3 - 2 * t)
+        // linearly interpolate between the two given noise values using remappedT as the
+        // position
         linear = lerp(previousVal, latestVal, remappedT)
 
         //test

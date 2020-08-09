@@ -110,10 +110,13 @@ class MainMenuActivity : AppCompatActivity() {
         else {
             setContentView(R.layout.activity_main_menu_no_shrine)
             Log.d(TAG, "Created no-shrine main menu")
+            /*
             debugClearNoShrine.setOnClickListener {
                 debugClearDatabase()
                 recreate()
             }
+
+             */
             buildShrineButton.setOnClickListener {
                 val selectStyle = Intent()
                 selectStyle.setComponent(ComponentName(this, getString(R.string.app_fullname).plus(".SelectStyleActivity")))

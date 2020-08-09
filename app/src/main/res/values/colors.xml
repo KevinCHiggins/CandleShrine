@@ -3,4 +3,10 @@
     <color name="colorPrimary">#6200EE</color>
     <color name="colorPrimaryDark">#3700B3</color>
     <color name="colorAccent">#03DAC5</color>
+    <color name="darkGreen">#14342B</color>
+    <color name="bronze">#525000</color>
+
+    <color name="offWhite">#DAE7DA</color>
+    <color name="darkPurple">#341C1C</color>
+    <color name="purple">#8F3985</color>
 </resources>

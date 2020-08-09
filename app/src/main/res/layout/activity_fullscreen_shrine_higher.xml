@@ -62,7 +62,7 @@
 
             android:id = "@+id/candleHolderFullscreenShrine">
 
-            <com.example.candleshrine.AlphaMovieView
+            <com.alphamovie.lib.AlphaMovieView
                 android:id="@+id/flameView"
                 android:layout_width="80dp"
                 android:layout_height="110dp"

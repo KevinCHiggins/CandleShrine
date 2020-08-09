@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.candleshrine;
+package com.alphamovie.lib;
 
 import android.content.Context;
 import android.graphics.SurfaceTexture;
