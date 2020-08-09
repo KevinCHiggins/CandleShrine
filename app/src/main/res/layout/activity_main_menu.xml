@@ -6,16 +6,9 @@
     android:layout_height="match_parent"
     android:background="@drawable/gradient"
 
+
     tools:context=".MainMenuActivity">
-    <Button
 
-        android:id="@+id/debugClearButton"
-        android:text="Clear saved data"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
     <Button
         android:id="@+id/editShrineButton"
         android:text="Edit shrine"

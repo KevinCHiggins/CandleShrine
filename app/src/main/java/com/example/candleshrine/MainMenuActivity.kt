@@ -83,12 +83,16 @@ class MainMenuActivity : AppCompatActivity() {
             if (candleIsLit) {
                 lightCandleButton.setEnabled(false)
             }
+
             Log.d(TAG, "Created standard main menu")
+            /*
             debugClearButton.setOnClickListener {
                 debugClearDatabase()
                 lastKnownIsShrineBuilt = false
                 recreate()
             }
+
+             */
             editShrineButton.setOnClickListener() {
                 val selectStyle = Intent()
                 selectStyle.setComponent(ComponentName(this, getString(R.string.app_fullname).plus(".SelectStyleActivity")))
@@ -124,14 +128,19 @@ class MainMenuActivity : AppCompatActivity() {
             }
         }
     }
+
     override fun onResume() {
         super.onResume()
         Log.d(TAG, "Resuming main menu, including check for change of shrine status")
+
         val updatedIsShrineBuilt = Paper.book().read<Boolean>(getString(R.string.database_key_shrine_built), false)
         if (updatedIsShrineBuilt != lastKnownIsShrineBuilt) {//sharedPrefs.getBoolean(getString(R.string.preferences_key_shrine_built), false) != lastKnownIsShrineBuilt) {
             lastKnownIsShrineBuilt = updatedIsShrineBuilt
             recreate()
         }
+        lastKnownCandleTimestamp = Paper.book().read(getString(R.string.database_key_last_candle_lighting_timestamp), 0)
+        updateCandleStatus()
+
     }
     override fun onSaveInstanceState(outState: Bundle, outPersistentState: PersistableBundle) {
         super.onSaveInstanceState(outState, outPersistentState)
@@ -144,9 +153,19 @@ class MainMenuActivity : AppCompatActivity() {
     }
 
     fun updateCandleStatus() {
+        Log.d(TAG, "Checking candle status")
         candleIsLit = (
                 System.currentTimeMillis() -
-                lastKnownCandleTimestamp <
-                resources.getInteger(R.integer.candle_duration_minutes) * 60000)
+                        lastKnownCandleTimestamp <
+                        resources.getInteger(R.integer.candle_duration_minutes) * 60000)
+
+        if (candleIsLit) {
+            Log.d(TAG, "Candle status: lit")
+            if (lightCandleButton != null) lightCandleButton.setEnabled(false)
+        }
+        else {
+            Log.d(TAG, "Candle status: not lit")
+            if (lightCandleButton != null) lightCandleButton.setEnabled(true)
+        }
     }
 }

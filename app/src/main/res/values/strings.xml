@@ -30,6 +30,7 @@
     <string name="temp_style_resized_cropped_filename">temp_style_</string>
     <string name="temp_style_lit_resized_cropped_filename">temp_style_lit_</string>
     <string name="sacred_image_filename">sacred_image</string>
+    <string name="loading_shrine"></string>
     <string name="shader_standard">
         #extension GL_OES_EGL_image_external : require\n
         precision mediump float;

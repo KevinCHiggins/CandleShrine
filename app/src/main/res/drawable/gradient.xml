@@ -5,6 +5,7 @@
         android:angle="45"
         android:gradientRadius="400dp"
         android:centerY="0.8"
+        android:centerX="0.2"
         android:endColor="@color/darkPurple"
         android:startColor="@color/darkGreen"
         android:type="radial" />

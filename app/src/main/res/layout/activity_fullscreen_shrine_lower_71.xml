@@ -5,6 +5,7 @@
     xmlns:custom="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/gradient"
     tools:context=".FullscreenShrineActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -14,9 +15,8 @@
             android:id="@+id/shrineLoadingText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/colorAccent"
-            android:background="@color/colorPrimaryDark"
-            android:text="Please wait. Loading shrine..."
+            style="@style/Loading"
+            android:text="@string/loading_shrine"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"

@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/gradient"
     tools:context=".SelectImageActivity">
 
     <ImageView
@@ -68,8 +69,7 @@
         android:id="@+id/imageLoadingText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="@color/colorAccent"
-        android:background="@color/colorPrimaryDark"
+        style="@style/Loading"
         android:text="Please wait. Loading images..."
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
