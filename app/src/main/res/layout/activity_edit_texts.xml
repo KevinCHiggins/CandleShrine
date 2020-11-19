@@ -75,7 +75,8 @@
         app:layout_constraintTop_toBottomOf="@id/intentionField"
         app:layout_constraintRight_toRightOf="parent"
         android:foregroundGravity="right"
-        android:layout_margin="20dp" />
+        android:layout_margin="20dp"
+        />
     <Button
         android:id="@+id/finishedButton"
         android:layout_width="wrap_content"

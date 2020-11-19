@@ -7,6 +7,7 @@
         <item name="colorAccent">@color/purple</item>
         <item name="buttonStyle">@style/Buttons</item>
         <item name="titleTextStyle">@style/Title</item>
+        <item name="android:textColorSecondary">@color/offWhite</item>
     </style>
     <style name="Title" parent="Widget.AppCompat.TextView">
         <item name="fontFamily">@font/lora_italic</item>
@@ -30,13 +31,20 @@
         <item name="android:textColor">@color/darkPurple</item>
         <item name="android:padding">8dp</item>
     </style>
+    <style name="Item" parent="Widget.AppCompat.TextView">
+        <item name="fontFamily">@font/lora</item>
+        <item name="android:textSize">24sp</item>
+        <item name="android:background">@color/offWhite</item>
+        <item name="android:textColor">@color/darkPurple</item>
+        <item name="android:padding">8dp</item>
+    </style>
     <style name="List" parent="Widget.AppCompat.ListView">
         <item name="fontFamily">@font/lora</item>
         <item name="android:textSize">20sp</item>
         <item name="android:background">@color/offWhite</item>
-        <item name="android:textColor">@color/darkPurple</item>
-        <item name="android:textAppearanceListItem">@style/Edit</item>
-        <item name="android:listSelector">@color/purple</item>
+        <item name="android:textColor">#FFFFFF</item>
+
+        <item name="android:listSelector">@color/bronze</item>
         <item name="android:padding">20dp</item>
     </style>
     <style name="Label" parent="Widget.AppCompat.TextView">
